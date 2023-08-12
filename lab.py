@@ -1,12 +1,5 @@
-"""
-6.1010 Spring '23 Lab 0: Audio Processing
-"""
-
 import wave
 import struct
-
-# No additional imports allowed!
-
 
 def backwards(sound):
     """
@@ -28,7 +21,6 @@ def backwards(sound):
     for index in range(len(sound["samples"]) - 1, -1, -1):
         reversed_samples.append(sound["samples"][index])
     return {"rate": sound["rate"], "samples": reversed_samples}
-
 
 def mix(sound1, sound2, p):
     """
@@ -86,63 +78,21 @@ def mix(sound1, sound2, p):
         right_mixed_samples = mix_samples(length, sound1["right"], sound2["right"])
         return {"rate": rate, "left": left_mixed_samples, "right": right_mixed_samples}
 
-    # version 1 code:
-    # if "samples" in sound1.keys():
-    #     samples1=sound1["samples"]
-    #     samples2=sound2["samples"]
-    #     if len(samples1)<=len(samples2): #decide length
-    #         length=len(samples1)
-    #     else:
-    #         length=len(samples2)
-
-    #     mixed_samples = []
-    #     while index <= length:
-    #         altered_samples1 = p*samples1[index]
-    #         altered_samples2 = samples2[index]*(1 - p)
-    #         mixed_samples.append(altered_samples1+altered_samples2)# add sounds
-    #         index += 1
-    #         if index == length: #end
-    #             break
-    #     return {"rate": rate, "samples": mixed_samples}# return new sound
-
-    # else:
-    #     left_samples1=sound1["left"]
-    #     left_samples2=sound2["left"]
-    #     if len(left_samples1)<=len(left_samples2): #decide length
-    #         length=len(left_samples1)
-    #     else:
-    #         length=len(left_samples2)
-
-    #     left_mixed_samples, right_mixed_samples = [], []
-
-    #     # add sounds
-    #     while index <= length:
-    #         left_altered_samples1 = p*left_samples1[index]
-    #         left_altered_samples2 = left_samples2[index]*(1 - p)
-    #         right_altered_samples1 = p*sound1["right"][index]
-    #         right_altered_samples2 = sound2["right"][index]*(1 - p)
-    #         left_mixed_samples.append(left_altered_samples1+left_altered_samples2)
-    #         right_mixed_samples.append(right_altered_samples1+right_altered_samples2)
-    #         index += 1
-    #         if index == length: #end
-    #             break
-
-    # return {"rate": rate, "left": left_mixed_samples, "right": right_mixed_samples}
-
-
 def convolve(sound, kernel):
     """
     Applies a filter to a sound, resulting in a new sound that is longer than
     the original mono sound by the length of the kernel - 1.
     Does not modify inputs.
 
-    Args:
+    Parameters
+    ----------
         sound: A mono sound dictionary with two key/value pairs:
             * "rate": an int representing the sampling rate, samples per second
             * "samples": a list of floats containing the sampled values
         kernel: A list of numbers
 
-    Returns:
+    Returns
+    -------
         A new mono sound dictionary.
     """
     samples = []  # a list of scaled sample lists
@@ -163,42 +113,22 @@ def convolve(sound, kernel):
         for sample in samples:
             final_sample[index] = final_sample[index] + sample[index]
 
-    # old code:
-    # for i, scale in enumerate(kernel):
-    #     scaled_sample = [0] * i  # offset scaled sound by filter index
-    #     scaled_sample += [scale * x for x in sound["samples"]]
-    #     samples.append(scaled_sample)
-
-    # # combine samples into one list
-    # final_sample = []
-    # for sample in samples:
-    #     for i, val in enumerate(sample):
-    #         # if not long enough, add [0] to end
-    #         if i >= len(final_sample):
-    #             final_sample = final_sample + [0]
-
-    #         # update final sample with new sample value
-    #         new_sample = [0] * len(final_sample)
-    #         new_sample[i] = val
-    #         for j, prev_val in enumerate(final_sample):
-    #             new_sample[j] += prev_val
-    #         final_sample = new_sample
-
     return {"rate": sound["rate"], "samples": final_sample}
-
 
 def echo(sound, num_echoes, delay, scale):
     """
     Compute a new signal consisting of several scaled-down and delayed versions
     of the input sound. Does not modify input sound.
 
-    Args:
+    Parameters
+    -------
         sound: a dictionary representing the original mono sound
         num_echoes: int, the number of additional copies of the sound to add
         delay: float, the amount of seconds each echo should be delayed
         scale: float, the amount by which each echo's samples should be scaled
 
-    Returns:
+    Returns
+    -------
         A new mono sound dictionary resulting from applying the echo effect.
     """
     sample_delay = round(delay * sound["rate"])
@@ -209,15 +139,6 @@ def echo(sound, num_echoes, delay, scale):
         echo_filter += [0] * (sample_delay-1)
         echo_filter += [scale**index]
     return convolve(sound, echo_filter)
-
-    # old code:
-    # echo_filter = [0] * (delay_n * num_echoes - 1)
-    # for i in range(1, len(echo_filter)):
-    #     offset = int(i * delay)
-    #     echo_filter[offset] = scale * i
-
-    # return convolve(echo_filter, sound)
-
 
 def pan(sound):
     """
@@ -270,36 +191,38 @@ def remove_vocals(sound):
 
 
 # below are helper functions for converting back-and-forth between WAV files
-# and our internal dictionary representation for sounds
+# and an internal dictionary representation for sounds
 
 
 def bass_boost_kernel(boost, scale=0):
     """
     Constructs a kernel that acts as a bass-boost filter.
 
-    We start by making a low-pass filter, whose frequency response is given by
+    Start by making a low-pass filter, whose frequency response is given by
     (1/2 + 1/2cos(Omega)) ^ N
 
-    Then we scale that piece up and add a copy of the original signal back in.
+    Then scale that piece up and add a copy of the original signal back in.
 
-    Args:
+    Parameters
+    -------
         boost: an int that controls the frequencies that are boosted (0 will
             boost all frequencies roughly equally, and larger values allow more
             focus on the lowest frequencies in the input sound).
         scale: a float, default value of 0 means no boosting at all, and larger
             values boost the low-frequency content more);
 
-    Returns:
+    Returns
+    -------
         A list of floats representing a bass boost kernel.
     """
-    # make this a fake "sound" so that we can use the convolve function
+    # make this a fake "sound" so that one can use the convolve function
     base = {"rate": 0, "samples": [0.25, 0.5, 0.25]}
     kernel = {"rate": 0, "samples": [0.25, 0.5, 0.25]}
     for i in range(boost):
         kernel = convolve(kernel, base["samples"])
     kernel = kernel["samples"]
 
-    # at this point, the kernel will be acting as a low-pass filter, so we
+    # at this point, the kernel will be acting as a low-pass filter, so
     # scale up the values by the given scale, and add in a value in the middle
     # to get a (delayed) copy of the original
     kernel = [i * scale for i in kernel]
@@ -312,12 +235,14 @@ def load_wav(filename, stereo=False):
     """
     Load a file and return a sound dictionary.
 
-    Args:
+    Parameters
+    -------
         filename: string ending in '.wav' representing the sound file
         stereo: bool, by default sound is loaded as mono, if True sound will
             have left and right stereo channels.
 
-    Returns:
+    Returns
+    -------
         A dictionary representing that sound.
     """
     sound_file = wave.open(filename, "r")
@@ -353,7 +278,8 @@ def write_wav(sound, filename):
     """
     Save sound to filename location in a WAV format.
 
-    Args:
+    Parameters
+    -------
         sound: a mono or stereo sound dictionary
         filename: a string ending in .WAV representing the file location to
             save the sound in
