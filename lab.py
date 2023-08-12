@@ -305,15 +305,7 @@ def write_wav(sound, filename):
 
 
 if __name__ == "__main__":
-    # code in this block will only be run when you explicitly run your script,
-    # and not when the tests are being run.  this is a good place to put your
-    # code for generating and saving sounds, or any other code you write for
-    # testing, etc.
-
-    # here is an example of loading a file (note that this is specified as
-    # sounds/hello.wav, rather than just as hello.wav, to account for the
-    # sound files being in a different directory than this file)
-
+    #example usages:
     # hello = load_wav("sounds/hello.wav")
     # mystery = load_wav("sounds/mystery.wav")
     # write_wav(backwards(hello), "hello_reversed.wav")
